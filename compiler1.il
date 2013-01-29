@@ -3,7 +3,7 @@
 
 .method static void compiler1()
 {
-  .entrypoint
+	.entrypoint
 	.maxstack 3
    
 	.locals init (
@@ -50,14 +50,19 @@
 	ret
 }
 
-//we initialize our assembly program...
+//we initialize our assembly program by setting up the system library and naming our program assembly
+//as of now it does nothing but return
 .method private static void InitializeProgram(class [mscorlib]System.IO.StreamWriter)
 {
 	ldarg.0			//push the writer onto the stack and write the string
-	ldstr ".assembly extern mscorlib {}";
+	ldstr ".assembly extern mscorlib {}"
 	callvirt instance void [mscorlib]System.IO.TextWriter::WriteLine(string)
 	
 	ldarg.0
-	ldstr ".assembly testoutput {}";
+	ldstr ".assembly testoutput {}"
+	callvirt instance void [mscorlib]System.IO.TextWriter::WriteLine(string)
+
+	ldarg.0
+	ldstr ".method static void testoutput() { ret }"
 	callvirt instance void [mscorlib]System.IO.TextWriter::WriteLine(string)
 }
