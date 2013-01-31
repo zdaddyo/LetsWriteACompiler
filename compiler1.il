@@ -6,43 +6,51 @@
 	.entrypoint
 	.maxstack 3
    
-	.locals init (
+	.locals init (		//we need a stream reader, writer and a string to hold each line read by sr
 		[0] class [mscorlib]System.IO.StreamReader sr,
 		[1] class [mscorlib]System.IO.StreamWriter sw,
 		[2] string line
 	)
    
-	ldstr "C:/Temp/test.bas"		//we are being lazy here by just reading test.bas
-	newobj instance void [mscorlib]System.IO.StreamReader::.ctor(string)	//creating a new StreamReader
+	ldstr "C:/Temp/test.bas"	//we are being lazy here by hard coding test.bas
+	newobj instance void [mscorlib]System.IO.StreamReader::.ctor(string)		//create new StreamReader
 	stloc sr
 	
 	ldstr "C:/Temp/testoutput.il"	//once again lazy
-	newobj instance void [mscorlib]System.IO.StreamWriter::.ctor(string)	//creating a new StreamWriter
+	ldc.i4.0			//we want to overwrite the file
+	newobj instance void [mscorlib]System.IO.StreamWriter::.ctor(string,bool)	//create new StreamWriter
 	stloc sw
-	
-	_READLOOP:
-	
-	ldloc sr		//push the StreamReader onto the stack and read a line
-	callvirt instance string [mscorlib]System.IO.TextReader::ReadLine()
-	dup				//copy the line read onto the stack
-	stloc line		//copy the duplicate line into "line"
-	
-	ldnull
-	ceq
-	ldc.i4.1		//compare the line to null and branch to _LOOPFINISHED if "line" is null
-	beq _LOOPFINISHED
-	
-	ldloc line		//push "line" onto the stack and write it to the console
-	call void [mscorlib]System.Console::WriteLine(string)
 	
 	ldloc sw		//oh, by the way we are emitting the initialization of the program
 	call void InitializeProgram(class [mscorlib]System.IO.StreamWriter)
 	
-	br.s _READLOOP	//loop back to read the next line
+	_READLOOP:
+	
+	ldloc sr		//push StreamReader onto stack and read a line
+	callvirt instance string [mscorlib]System.IO.TextReader::ReadLine()
+	dup			//copy line read onto stack
+	stloc line		//copy duplicate line into variable "line"
+	
+	ldnull
+	ceq
+	ldc.i4.1		//compare line to null and branch to _LOOPFINISHED if "line" is null
+	beq _LOOPFINISHED
+	
+	ldloc line		//push "line" onto stack and write to console
+	call void [mscorlib]System.Console::WriteLine(string)
+
+	ldloc sw
+	ldstr "nop"		//emit a "no operation" for each line
+	callvirt instance void [mscorlib]System.IO.TextWriter::WriteLine(string)
+
+	br.s _READLOOP		//loop back to read the next line
 	
 	_LOOPFINISHED:
+
+	ldloc sw
+	call void FinishProgram(class [mscorlib]System.IO.StreamWriter)
 	
-	ldloc sr		//close the reader and writer
+	ldloc sr		//close reader and writer
 	callvirt instance void [mscorlib]System.IO.TextReader::Close()
 	
 	ldloc sw
@@ -63,6 +71,22 @@
 	callvirt instance void [mscorlib]System.IO.TextWriter::WriteLine(string)
 
 	ldarg.0
-	ldstr ".method static void testoutput() { ret }"
+	ldstr ".method static void testoutput() {"
+	callvirt instance void [mscorlib]System.IO.TextWriter::WriteLine(string)
+	
+	ldarg.0
+	ldstr ".entrypoint"
+	callvirt instance void [mscorlib]System.IO.TextWriter::WriteLine(string)
+}
+
+//now finish the main method
+.method private static void FinishProgram(class [mscorlib]System.IO.StreamWriter)
+{
+	ldarg.0
+	ldstr "ret"
+	callvirt instance void [mscorlib]System.IO.TextWriter::WriteLine(string)
+	
+	ldarg.0
+	ldstr "}"
 	callvirt instance void [mscorlib]System.IO.TextWriter::WriteLine(string)
 }
