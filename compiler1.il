@@ -62,6 +62,8 @@
 //as of now it does nothing but return
 .method private static void InitializeProgram(class [mscorlib]System.IO.StreamWriter)
 {
+	.maxstack 2
+	
 	ldarg.0			//push writer onto stack and write the string
 	ldstr ".assembly extern mscorlib {}"
 	callvirt instance void [mscorlib]System.IO.TextWriter::WriteLine(string)
@@ -77,11 +79,15 @@
 	ldarg.0
 	ldstr ".entrypoint"
 	callvirt instance void [mscorlib]System.IO.TextWriter::WriteLine(string)
+	
+	ret
 }
 
 //now finish the main method
 .method private static void FinishProgram(class [mscorlib]System.IO.StreamWriter)
 {
+	.maxstack 2
+	
 	ldarg.0
 	ldstr "ret"
 	callvirt instance void [mscorlib]System.IO.TextWriter::WriteLine(string)
@@ -89,4 +95,6 @@
 	ldarg.0
 	ldstr "}"
 	callvirt instance void [mscorlib]System.IO.TextWriter::WriteLine(string)
+	
+	ret
 }
