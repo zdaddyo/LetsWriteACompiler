@@ -141,12 +141,14 @@
 	ceq
 	brtrue.s _PRINTCOMMAND
 	
+	br _UNKNOWNCOMMAND
+	
 _ENDCOMMAND:
 	ldloc returnval
 	ldstr "ret"		//end just returns from the program
 	call string[mscorlib]System.String::Concat(string,string)
 	stloc returnval
-	br.s _ENDPROCESS
+	br _ENDPROCESS
 	
 _REMCOMMAND:
 	ldloc returnval
@@ -158,7 +160,7 @@ _REMCOMMAND:
 	
 	//need length of linenumber plus 5
 	ldloc linenumber
-	callvirt instance int32[mscorlib]System.String::Length()
+	callvirt instance int32[mscorlib]System.String::get_Length()
 	ldc.i4.5
 	add
 
@@ -187,6 +189,17 @@ _GOTOCOMMAND:
 	br.s _ENDPROCESS
 	
 _PRINTCOMMAND:
+	ldloc returnval
+	ldstr "//PRINT COMMAND"
+	call string[mscorlib]System.String::Concat(string,string)
+	stloc returnval
+	br.s _ENDPROCESS
+	
+_UNKNOWNCOMMAND:
+	ldloc returnval
+	ldstr "//UNKNOWN COMMAND"
+	call string[mscorlib]System.String::Concat(string,string)
+	stloc returnval
 	br.s _ENDPROCESS
 	
 _ENDPROCESS:
