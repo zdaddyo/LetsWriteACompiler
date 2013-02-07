@@ -111,26 +111,36 @@
 	call string [mscorlib]System.String::Concat(string,string,string)
 	stloc returnval
 	
-	//lets look at the command and work off of that now
+	//lets look at the command and work off of that right now
 	ldloc command
 	ldstr "END"
 	call bool [mscorlib]System.String::op_Equality(string,string)
-	brtrue.s _ENDCOMMAND
+	brtrue _ENDCOMMAND
 	
 	ldloc command
 	ldstr "REM"
 	call bool [mscorlib]System.String::op_Equality(string,string)
-	brtrue.s _REMCOMMAND
+	brtrue _REMCOMMAND
 	
 	ldloc command
 	ldstr "GOTO"
 	call bool [mscorlib]System.String::op_Equality(string,string)
-	brtrue.s _GOTOCOMMAND
+	brtrue _GOTOCOMMAND
 	
 	ldloc command
 	ldstr "PRINT"
 	call bool [mscorlib]System.String::op_Equality(string,string)
-	brtrue.s _PRINTCOMMAND
+	brtrue _PRINTCOMMAND
+	
+	ldloc command
+	ldstr "LET"
+	call bool [mscorlib]System.String::op_Equality(string,string)
+	brtrue _LETCOMMAND
+	
+	ldloc command
+	ldstr "IF"
+	call bool [mscorlib]System.String::op_Equality(string,string)
+	brtrue _IFCOMMAND
 	
 	br _UNKNOWNCOMMAND
 	
@@ -162,7 +172,7 @@ _REMCOMMAND:
 	ldloc tempstring
 	call string[mscorlib]System.String::Concat(string,string)
 	stloc returnval
-	br.s _ENDPROCESS
+	br _ENDPROCESS
 	
 _GOTOCOMMAND:
 	ldloc returnval
@@ -177,14 +187,28 @@ _GOTOCOMMAND:
 	call string[mscorlib]System.String::Concat(string,string)
 	stloc returnval
 	
-	br.s _ENDPROCESS
+	br _ENDPROCESS
 	
 _PRINTCOMMAND:
 	ldloc returnval
 	ldstr "//PRINT COMMAND"
 	call string[mscorlib]System.String::Concat(string,string)
 	stloc returnval
-	br.s _ENDPROCESS
+	br _ENDPROCESS
+	
+_LETCOMMAND:
+	ldloc returnval
+	ldstr "//LET COMMAND"
+	call string[mscorlib]System.String::Concat(string,string)
+	stloc returnval
+	br _ENDPROCESS
+	
+_IFCOMMAND:
+	ldloc returnval
+	ldstr "//IF COMMAND"
+	call string[mscorlib]System.String::Concat(string,string)
+	stloc returnval
+	br _ENDPROCESS
 	
 _UNKNOWNCOMMAND:
 	ldloc returnval
