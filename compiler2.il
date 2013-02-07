@@ -107,38 +107,29 @@
 	//get the line number and use it as a label with a nop
 	ldstr "BAS_"
 	ldloc linenumber
-	call string [mscorlib]System.String::Concat(string,string)
 	ldstr ": nop\n"
-	call string [mscorlib]System.String::Concat(string,string)
+	call string [mscorlib]System.String::Concat(string,string,string)
 	stloc returnval
 	
 	//lets look at the command and work off of that now
 	ldloc command
 	ldstr "END"
 	call bool [mscorlib]System.String::op_Equality(string,string)
-	ldc.i4.1
-	ceq
 	brtrue.s _ENDCOMMAND
 	
 	ldloc command
 	ldstr "REM"
 	call bool [mscorlib]System.String::op_Equality(string,string)
-	ldc.i4.1
-	ceq
 	brtrue.s _REMCOMMAND
 	
 	ldloc command
 	ldstr "GOTO"
 	call bool [mscorlib]System.String::op_Equality(string,string)
-	ldc.i4.1
-	ceq
 	brtrue.s _GOTOCOMMAND
 	
 	ldloc command
 	ldstr "PRINT"
 	call bool [mscorlib]System.String::op_Equality(string,string)
-	ldc.i4.1
-	ceq
 	brtrue.s _PRINTCOMMAND
 	
 	br _UNKNOWNCOMMAND
