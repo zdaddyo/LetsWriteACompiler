@@ -190,8 +190,24 @@ _GOTOCOMMAND:
 	br _ENDPROCESS
 	
 _PRINTCOMMAND:
+	//check to see if the first character is a quote
+	ldloc linesections
+	ldc.i4.2
+	ldelem.ref
+	ldc.i4.0
+	callvirt instance char [mscorlib]System.String::get_Chars(int32)
+	ldc.i4.s 34
+	ceq
+	brfalse.s _PRINTEXPRESSION
 	ldloc returnval
-	ldstr "//PRINT COMMAND"
+	ldstr "//PRINT COMMAND STRING"
+	call string[mscorlib]System.String::Concat(string,string)
+	stloc returnval
+	br _ENDPROCESS
+	
+_PRINTEXPRESSION:	
+	ldloc returnval
+	ldstr "//PRINT COMMAND EXPRESSION"
 	call string[mscorlib]System.String::Concat(string,string)
 	stloc returnval
 	br _ENDPROCESS
