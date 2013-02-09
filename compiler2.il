@@ -3,9 +3,15 @@
 
 .method static void compiler2()
 {
-  .entrypoint
+	.entrypoint
 	.maxstack 4
-   
+	
+	//We need to be able to read the source file and write out the compiled code so we
+	//will create a StreamReader and StreamWriter. Initially we are going to be lazy and
+	//just hardcode those files as "test.bas" and "testoutput.il". "testoutput.il" will
+	//be able to be assembled by ilasm.exe into the .NET executable. We also need to store
+	//each line of the source code which we do in the string variable "line". "codeoutput"
+	//holds the output we will emit into "testoutput.il".
 	.locals init (
 		[0] class [mscorlib]System.IO.StreamReader sr,
 		[1] class [mscorlib]System.IO.StreamWriter sw,
@@ -13,49 +19,58 @@
 		[3] string codeoutput
 	)
    
-	ldstr "C:/Temp/test.bas"		//we are being lazy here by just reading test.bas
-	newobj instance void [mscorlib]System.IO.StreamReader::.ctor(string)		//creating a new StreamReader
+	ldstr "C:/Temp/test.bas"
+	newobj instance void [mscorlib]System.IO.StreamReader::.ctor(string)		//create new StreamReader
 	stloc sr
 
-	ldstr "C:/Temp/testoutput.il"	//once again lazy
-	ldc.i4.0						//we want to overwrite the file
-	newobj instance void [mscorlib]System.IO.StreamWriter::.ctor(string,bool)	//creating a new StreamWriter
+	ldstr "C:/Temp/testoutput.il"
+	ldc.i4.0																	//overwrite file
+	newobj instance void [mscorlib]System.IO.StreamWriter::.ctor(string,bool)	//create new StreamWriter
 	stloc sw
 	
-	ldloc sw		//oh, by the way we are emitting the initialization of the program
+	//We are done creating the StreamReader and StreamWriter so now we call
+	//InitializeProgram with the StreamWriter parameter so we can emit the
+	//initialization of the output file. This includes stuff like .assembly
+	//and .entrypoint.
+	ldloc sw
 	call void InitializeProgram(class [mscorlib]System.IO.StreamWriter)
 
-	_READLOOP:
+	//Now we have our main loop where we read the BASIC file line by line and
+	//process each line. We read the file until we get a null value which signals
+	//that we are at the end of the file.
+_READLOOP:
 
-	ldloc sr		//push the StreamReader onto the stack and read a line
+	ldloc sr			//push StreamReader onto stack and read line
 	callvirt instance string [mscorlib]System.IO.TextReader::ReadLine()
-	dup				//copy the line read onto the stack
-	stloc line		//copy the duplicate line into "line"
+	dup					//dup line so we can save it and check for null
+	stloc line
 
 	ldnull
 	ceq
-	ldc.i4.1		//compare the line to null and branch to _LOOPFINISHED if "line" is null
+	ldc.i4.1			//compare line to null and branch to _LOOPFINISHED if it is null
 	beq _LOOPFINISHED
 
-	ldloc line		//push "line" onto the stack and write it to the console
+	ldloc line			//push "line" onto stack and write it to console
 	call void [mscorlib]System.Console::WriteLine(string)
 	
-	ldloc line
+	ldloc line			//process line, ProcessLine leaves code to emit on stack
 	call string ProcessLine(string)
 	
-	stloc codeoutput	//pop the processed string
+	stloc codeoutput	//pop processed string
 	ldloc sw
 	ldloc codeoutput
 	callvirt instance void [mscorlib]System.IO.TextWriter::WriteLine(string)
 
-	br.s _READLOOP	//loop back to read the next line
+	br.s _READLOOP		//read next line
 
-	_LOOPFINISHED:
+_LOOPFINISHED:
 	
+	//We've hit the end of the file, so now we need to clean things up by
+	//emitting the final bit of code to make sure the program assembles.
 	ldloc sw
 	call void FinishProgram(class [mscorlib]System.IO.StreamWriter)
 
-	ldloc sr		//close the reader and writer
+	ldloc sr			//close the reader and writer
 	callvirt instance void [mscorlib]System.IO.TextReader::Close()
 
 	ldloc sw
@@ -77,7 +92,7 @@
 		[5] string returnval
 	)
 	
-	//create the array to split the input using space
+	//create the array to split up input line using spaces
 	ldc.i4.1
 	newarr [mscorlib]System.Char
 	stloc.s delim
@@ -157,6 +172,8 @@ _REMCOMMAND:
 	call string[mscorlib]System.String::Concat(string,string)
 	stloc returnval
 	
+	//load line onto stack so we can get the rem text 
+	//after getting length of linenumber
 	ldarg.0
 	
 	//need length of linenumber plus 5
